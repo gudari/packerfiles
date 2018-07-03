@@ -1,0 +1,53 @@
+{
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "vm_name": "rancheros-{{user `version`}}",
+
+      "iso_url": "{{ user `iso_url` }}",
+      "iso_checksum": "{{ user `iso_checksum`}}",
+      "iso_checksum_type": "{{ user `checksum_type`}}",
+      "iso_interface": "sata",
+
+      "communicator": "ssh",
+      "ssh_port": 22,
+      "ssh_username": "rancher",
+      "ssh_private_key_file": "keys/vagrant",
+      "ssh_timeout": "40m",
+
+      "guest_os_type": "Linux_64",
+      "hard_drive_interface": "sata",
+      "disk_size": 40960,
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "1024"],
+        ["storagectl", "{{.Name}}", "--name", "SATA Controller", "--portcount", "2"],
+        ["storagectl", "{{.Name}}", "--name", "IDE Controller", "--remove" ]
+      ],
+      "guest_additions_mode": "disable",
+
+      "http_directory": "files",
+
+      "boot_command": [
+        "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/cloud-config.yml<enter>",
+        "sudo ros install -d /dev/sda -c cloud-config.yml<enter>",
+        "y<enter><wait10><wait10><wait10><wait10><wait10><wait10>",
+        "<wait10><wait10><wait10><wait10><wait10><wait10>",
+        "y<enter>"
+      ],
+      "boot_wait": "30s"
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "output": "build/rancheros_{{ user `version` }}.box",
+      "vagrantfile_template": "vagrant-rancheros.template"
+    }
+  ],
+  "variables": {
+    "version": "latest",
+    "iso_url": "iso/rancheros.iso",
+    "iso_checksum": "fbc67ac3a71e9ba53a18b65ce4c0d9f6",
+    "checksum_type": "md5"
+    }
+}
