@@ -1,0 +1,14 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.box = "ubuntu-18.04.box"
+  config.vm.network :private_network, ip: "172.16.0.30"
+
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+  end
+end
