@@ -1,0 +1,100 @@
+{
+    "builders": [
+      {
+        "boot_command": [
+            "<esc><wait>",
+            "<esc><wait>",
+            "<enter><wait>",
+            "/install/vmlinuz<wait>",
+            " auto<wait>",
+            " console-setup/ask_detect=false<wait>",
+            " console-setup/layoutcode=us<wait>",
+            " console-setup/modelcode=pc105<wait>",
+            " debconf/frontend=noninteractive<wait>",
+            " debian-installer=en_US.UTF-8<wait>",
+            " fb=false<wait>",
+            " initrd=/install/initrd.gz<wait>",
+            " kbd-chooser/method=us<wait>",
+            " keyboard-configuration/layout=ES<wait>",
+            " keyboard-configuration/variant=ES<wait>",
+            " locale=en_US.UTF-8<wait>",
+            " netcfg/get_domain=vm<wait>",
+            " netcfg/get_hostname=vagrant<wait>",
+            " grub-installer/bootdev=/dev/sda<wait>",
+            " noapic<wait>",
+            " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/{{user `preseed_path`}}<wait>",
+            " -- <wait>",
+            "<enter><wait>"
+        ],
+        "type": "virtualbox-iso",
+        "vboxmanage": [
+          [
+              "modifyvm",
+              "{{.Name}}",
+              "--memory",
+              "2048"
+          ],
+          [
+              "modifyvm",
+              "{{.Name}}",
+              "--cpus",
+              "2"
+          ]
+        ],
+        "guest_os_type": "Ubuntu_64",
+        "hard_drive_interface": "sata",
+        "disk_size": 65536,
+        "headless": "{{ user `headless` }}",
+        "boot_wait": "10s",
+        "iso_url": "{{ user `iso_url` }}",
+        "iso_checksum": "{{ user `iso_checksum` }}",
+        "iso_checksum_type": "{{ user `iso_checksum_type` }}",
+        "ssh_username": "vagrant",
+        "ssh_password": "vagrant",
+        "ssh_wait_timeout": "10000s",
+        "ssh_port": 22,
+        "shutdown_command": "echo 'vagrant' | sudo -S shutdown -P now",
+        "shutdown_timeout": "15m",
+        "http_directory": "http",
+        "virtualbox_version_file": ".vbox_version",
+        "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso"
+      }
+    ],
+    "provisioners": [
+        {
+          "environment_vars": [
+            "HOME_DIR=/home/vagrant",
+            "http_proxy={{user `http_proxy`}}",
+            "https_proxy={{user `https_proxy`}}",
+            "no_proxy={{user `no_proxy`}}"
+          ],
+          "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E sh -eux '{{.Path}}'",
+          "expect_disconnect": true,
+          "scripts": [
+            "scripts/update.sh",
+            "scripts/desktop.sh",
+            "scripts/sshd.sh",
+            "scripts/network.sh",
+            "scripts/sudoers.sh",
+            "scripts/vagrant.sh",
+            "scripts/virtualbox.sh"
+          ],
+          "type": "shell"
+        }
+    ],
+    "post-processors": [
+        {
+          "type": "vagrant",
+          "keep_input_artifact": true,
+          "output": "ubuntu-18.04-desktop.box"
+        }
+    ],
+    "variables": {
+        "headless": "false",
+        "iso_checksum_type": "sha256",
+        "iso_checksum": "a7f5c7b0cdd0e9560d78f1e47660e066353bb8a79eb78d1fc3f4ea62a07e6cbc",
+        "iso_url": "http://cdimage.ubuntu.com/ubuntu/releases/18.04/release/ubuntu-18.04-server-amd64.iso",
+        "preseed_path": "preseed.cfg",
+        "version": "TIMESTAMP"
+      }
+}
